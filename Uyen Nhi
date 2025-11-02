@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hỷ Hà Uyển Nhi</title>
+<style>
+  :root{
+    --bg: #FFF8E8;
+    --card: #fffefc;
+    --muted: #6b6b6b;
+    --accent-1: #FFDFA8;
+    --pastel-1: #FFE8D6;
+    --timo-purple: #6C2AA6;
+    --timo-blue: #0077C8;
+    --timo-orange: #FF7A18;
+    --shadow: 0 8px 30px rgba(19,24,38,0.08);
+  }
+  body{
+    font-family: "Inter", system-ui, sans-serif;
+    background: linear-gradient(180deg,var(--bg),#FFFDEE);
+    color: #222;
+    margin:0; padding:30px;
+    display:flex; justify-content:center; align-items:center; min-height:100vh;
+  }
+  .card{
+    background: linear-gradient(180deg,var(--card),#fff);
+    border-radius:20px;
+    padding:30px 40px;
+    box-shadow: var(--shadow);
+    text-align:center;
+    border:1px solid rgba(0,0,0,0.03);
+    max-width:420px;
+  }
+  .avatar{
+    width:120px; height:120px; border-radius:50%;
+    background:url('https://i.imgur.com/WTelp9N.jpeg') center/cover no-repeat;
+    margin:0 auto 16px auto;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    border:4px solid #fff8e8;
+  }
+  h1{margin:0; font-size:22px; color:#4b2d00;}
+  p{margin:4px 0; color:var(--muted); font-size:15px;}
+  .bank{
+    padding:16px; border-radius:12px;
+    background:linear-gradient(90deg, rgba(108,42,166,0.05), rgba(0,119,200,0.05));
+    border:1px solid rgba(108,42,166,0.08);
+    margin:20px 0;
+    text-align:left;
+  }
+  .bank .bank-name{
+    font-weight:800; font-size:16px;
+    background: linear-gradient(90deg, var(--timo-purple), var(--timo-blue) 50%, var(--timo-orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .bank .acct{margin-top:6px; font-weight:700; color:#0f2540;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:10px 16px; border-radius:10px; text-decoration:none; font-weight:700;
+    margin:6px; box-shadow:0 6px 18px rgba(20,30,40,0.06);
+    transition:all .2s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn--fb{background:linear-gradient(90deg,#3b5998,#4a66b9); color:white;}
+  .btn--zalo{background:linear-gradient(90deg,#00ADEF,#0088CC); color:white;}
+  .btn--copy{background:#fff; border:1px dashed rgba(0,0,0,0.08); color:#333;}
+  .note{
+    margin-top:12px;
+    padding:10px;
+    border-radius:8px;
+    background:linear-gradient(180deg,#fffefc,#fff);
+    border:1px solid rgba(0,0,0,0.03);
+    color:var(--muted);
+    font-size:14px;
+  }
+  footer{margin-top:18px; font-size:13px; color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="avatar"></div>
+    <h1>Hỷ Hà Uyển Nhi</h1>
+    <p>SĐT: <a href="tel:0389205827">0389 205 827</a></p>
+    <p>Gmail: <a href="mailto:Hyhauyennhi1306@gmail.com">Hyhauyennhi1306@gmail.com</a></p>
+
+    <div class="bank">
+      <div class="bank-name">Timo Digital Bank</div>
+      <div class="acct">Số tài khoản: <span id="accountNum">0389205827</span></div>
+      <div style="color:#555; margin-top:4px;">Tên thụ hưởng: <strong>Hỷ Hà Uyển Nhi</strong></div>
+      <button class="btn btn--copy" id="copyAccount" style="margin-top:10px;">Sao chép số tài khoản</button>
+    </div>
+
+    <div>
+      <a class="btn btn--fb" href="https://www.facebook.com/share/1DTcHcwSR4/?mibextid=wwXIfr" target="_blank">Facebook</a>
+      <a class="btn btn--zalo" href="https://zalo.me/0389205827" target="_blank">Zalo</a>
+      <button class="btn btn--copy" id="copyPhone">Sao chép SĐT</button>
+    </div>
+
+    <div class="note">
+      <strong>Ghi chú bảo mật:</strong> Trang này chỉ dùng để chia sẻ thông tin cá nhân. Không sử dụng vào mục đích khác ngoài liên hệ.
+    </div>
+
+    <footer>© 2025 Hỷ Hà Uyển Nhi — <a href="mailto:Hyhauyennhi1306@gmail.com">Hyhauyennhi1306@gmail.com</a></footer>
+  </div>
+
+<script>
+document.getElementById('copyAccount').addEventListener('click', function(){
+  const text = document.getElementById('accountNum').innerText.trim();
+  navigator.clipboard.writeText(text).then(()=>{
+    alert('Đã sao chép số tài khoản: ' + text);
+  });
+});
+document.getElementById('copyPhone').addEventListener('click', function(){
+  navigator.clipboard.writeText('0389205827').then(()=>{
+    alert('Đã sao chép số điện thoại: 0389205827');
+  });
+});
+</script>
+</body>
+</html>
