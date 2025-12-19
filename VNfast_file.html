@@ -17,7 +17,6 @@ body{
     overflow:hidden;
 }
 
-/* BOX */
 .container{
     background:#ffffffdd;
     backdrop-filter: blur(6px);
@@ -26,11 +25,9 @@ body{
     text-align:center;
     max-width:360px;
     box-shadow:0 10px 30px rgba(0,0,0,.15);
-    position:relative;
     z-index:2;
 }
 
-/* AVATAR */
 .avatar{
     width:120px;
     height:120px;
@@ -45,14 +42,12 @@ body{
     object-fit:cover;
 }
 
-/* TEXT */
 p{
     font-size:14px;
     color:#555;
     line-height:1.5;
 }
 
-/* BUTTON */
 button{
     margin-top:15px;
     padding:12px 26px;
@@ -63,13 +58,18 @@ button{
     color:#fff;
     cursor:pointer;
 }
-button:hover{ opacity:.9 }
+button:hover{opacity:.9}
 
-/* STATUS */
 #status{
-    margin-top:15px;
+    margin-top:12px;
     font-weight:bold;
     color:#e53935;
+}
+
+#countdown{
+    margin-top:10px;
+    font-weight:bold;
+    color:#6a1b9a;
 }
 
 /* SNOW */
@@ -78,15 +78,11 @@ button:hover{ opacity:.9 }
     top:-10px;
     color:#fff;
     font-size:18px;
-    user-select:none;
     pointer-events:none;
     animation: fall linear infinite;
-    opacity:.8;
 }
 @keyframes fall{
-    to{
-        transform: translateY(110vh);
-    }
+    to{ transform: translateY(110vh); }
 }
 </style>
 </head>
@@ -103,72 +99,116 @@ button:hover{ opacity:.9 }
         rồi trở lại vào web để truy cập File hay tài liệu cần lấy “
     </p>
 
-    <button id="accessBtn">Truy cập</button>
-
+    <button id="mainBtn">Truy cập</button>
+    <div id="countdown"></div>
     <div id="status"></div>
 </div>
 
 <script>
-const ACCESS_TIME = 10 * 1000; // 10 giây
-const KEY = "shopee_access_time";
+/* ===== CONFIG ===== */
+const WAIT_TIME = 10 * 1000;
+const FILE_TIME = 5 * 60 * 1000;
 
-const btn = document.getElementById("accessBtn");
+const KEY_START = "start_time";
+const KEY_UNLOCK = "unlock_time";
+
+/* ===== ELEMENT ===== */
+const btn = document.getElementById("mainBtn");
 const status = document.getElementById("status");
+const countdownEl = document.getElementById("countdown");
 
-// kiểm tra khi quay lại trang
-function checkReturn(){
-    const start = localStorage.getItem(KEY);
-    if(!start) return;
+let timer = null;
 
-    const diff = Date.now() - parseInt(start);
-
-    if(diff < ACCESS_TIME){
-        status.innerText = "❌ Chưa đủ thời gian truy cập. Vui lòng thực hiện lại.";
-        localStorage.removeItem(KEY);
-        btn.style.display = "inline-block";
-        btn.innerText = "Truy cập";
-        btn.onclick = startAccess;
-    }else{
-        status.innerText = "✅ Hoàn tất xác nhận.";
-        btn.innerText = "Truy cập tài liệu & File";
-        btn.style.display = "inline-block";
-        btn.onclick = () => {
-            window.location.href =
-            "https://docs.google.com/document/d/1-AczkDnMaiETz8CXb42j3FEo7GWReKLjln5seMIFPvg/edit?usp=drivesdk";
-        };
-    }
+/* ===== RESET ===== */
+function reset(msg){
+    localStorage.removeItem(KEY_START);
+    localStorage.removeItem(KEY_UNLOCK);
+    btn.innerText = "Truy cập";
+    btn.style.display = "inline-block";
+    btn.onclick = startAccess;
+    countdownEl.innerText = "";
+    status.innerText = msg || "";
+    if(timer) clearInterval(timer);
 }
 
+/* ===== START ACCESS ===== */
 function startAccess(){
-    localStorage.setItem(KEY, Date.now());
-    status.innerText = "⏳ Đang xác nhận... hãy quay lại sau 10 giây";
+    const now = Date.now();
+    localStorage.setItem(KEY_START, now);
+    status.innerText = "";
     btn.style.display = "none";
-
-    // mở Shopee
+    startCountdown(now);
     window.location.href = "https://s.shopee.vn/6Ae4C7ROMz";
 }
 
-// gắn sự kiện
-btn.onclick = startAccess;
+/* ===== COUNTDOWN DISPLAY ===== */
+function startCountdown(start){
+    if(timer) clearInterval(timer);
+    timer = setInterval(()=>{
+        const remain = WAIT_TIME - (Date.now() - start);
+        if(remain > 0){
+            countdownEl.innerText = `⏳ Đang đếm: ${Math.ceil(remain/1000)} giây`;
+        }else{
+            countdownEl.innerText = "✔ Đã đủ 10 giây";
+            clearInterval(timer);
+        }
+    },500);
+}
 
-// khi quay lại trang
-document.addEventListener("visibilitychange",()=>{
-    if(!document.hidden){
-        checkReturn();
+/* ===== CHECK STATE ===== */
+function checkState(){
+    const start = localStorage.getItem(KEY_START);
+    const unlock = localStorage.getItem(KEY_UNLOCK);
+    const now = Date.now();
+
+    /* ĐÃ MỞ FILE */
+    if(unlock){
+        if(now - unlock >= FILE_TIME){
+            reset("");
+        }else{
+            btn.innerText = "Truy cập tài liệu & File";
+            btn.style.display = "inline-block";
+            btn.onclick = ()=>{
+                window.location.href =
+                "https://docs.google.com/document/d/1-AczkDnMaiETz8CXb42j3FEo7GWReKLjln5seMIFPvg/edit?usp=drivesdk";
+            };
+        }
+        return;
     }
-});
-checkReturn();
 
-/* SNOW EFFECT */
-for(let i=0;i<40;i++){
-    const snow=document.createElement("div");
-    snow.className="snow";
-    snow.innerText="❄";
-    snow.style.left=Math.random()*100+"vw";
-    snow.style.animationDuration=3+Math.random()*5+"s";
-    snow.style.fontSize=10+Math.random()*15+"px";
-    snow.style.opacity=Math.random();
-    document.body.appendChild(snow);
+    if(!start) return;
+
+    const diff = now - start;
+
+    if(diff < WAIT_TIME){
+        const thiếu = Math.ceil((WAIT_TIME - diff)/1000);
+        reset(`❌ Chưa đủ thời gian truy cập – còn thiếu ${thiếu} giây`);
+    }else{
+        localStorage.setItem(KEY_UNLOCK, now);
+        btn.innerText = "Truy cập tài liệu & File";
+        btn.style.display = "inline-block";
+        btn.onclick = ()=>{
+            window.location.href =
+            "https://docs.google.com/document/d/1-AczkDnMaiETz8CXb42j3FEo7GWReKLjln5seMIFPvg/edit?usp=drivesdk";
+        };
+        status.innerText = "✅ Hoàn tất xác nhận";
+        countdownEl.innerText = "";
+    }
+}
+
+/* ===== EVENTS ===== */
+btn.onclick = startAccess;
+window.addEventListener("pageshow", checkState);
+
+/* ===== SNOW ===== */
+for(let i=0;i<35;i++){
+    const s=document.createElement("div");
+    s.className="snow";
+    s.innerText="❄";
+    s.style.left=Math.random()*100+"vw";
+    s.style.animationDuration=3+Math.random()*5+"s";
+    s.style.fontSize=10+Math.random()*15+"px";
+    document.body.appendChild(s);
 }
 </script>
 
