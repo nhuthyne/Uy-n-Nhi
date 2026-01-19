@@ -1,216 +1,243 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Truy cập tài liệu</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảo Hy PDF Tool v2</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Giao diện Pastel Dễ Thương (Giữ nguyên style cũ + thêm chút xíu) --- */
+        :root {
+            --primary-color: #ffb7b2;
+            --secondary-color: #a2e1db;
+            --bg-color: #fdf2f0;
+            --text-color: #555;
+            --white: #ffffff;
+            --checkbox-color: #ffdac1;
+        }
 
-<style>
-body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#fde2e4,#e0f4ff);
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-}
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-.container{
-    background:#ffffffdd;
-    backdrop-filter: blur(6px);
-    padding:25px 22px 30px;
-    border-radius:20px;
-    text-align:center;
-    max-width:360px;
-    box-shadow:0 10px 30px rgba(0,0,0,.15);
-    z-index:2;
-}
+        .container {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(255, 183, 178, 0.4);
+            text-align: center;
+            width: 420px;
+            max-width: 90%;
+        }
 
-.avatar{
-    width:120px;
-    height:120px;
-    margin:0 auto 15px;
-    border-radius:50%;
-    overflow:hidden;
-    border:5px solid #f8bbd0;
-}
-.avatar img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
+        h1 { color: var(--primary-color); font-size: 24px; margin-bottom: 5px; }
+        .icon { font-size: 50px; margin-bottom: 10px; display: block; }
+        p { font-size: 14px; margin-bottom: 25px; color: #888; }
 
-p{
-    font-size:14px;
-    color:#555;
-    line-height:1.5;
-}
+        /* Input File */
+        .file-input-wrapper { margin-bottom: 15px; }
+        input[type="file"] { display: none; }
+        
+        .custom-file-upload {
+            border: 2px dashed var(--secondary-color);
+            display: inline-block;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 12px;
+            color: var(--secondary-color);
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 80%;
+        }
+        .custom-file-upload:hover { background-color: #f0fffd; }
 
-button{
-    margin-top:15px;
-    padding:12px 26px;
-    font-size:15px;
-    border:none;
-    border-radius:25px;
-    background:#ba68c8;
-    color:#fff;
-    cursor:pointer;
-}
-button:hover{opacity:.9}
+        /* Checkbox Tùy chọn */
+        .options-wrapper {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 15px;
+            background: #fff5f5;
+            padding: 10px;
+            border-radius: 10px;
+        }
 
-#status{
-    margin-top:12px;
-    font-weight:bold;
-    color:#e53935;
-}
+        input[type="checkbox"] {
+            accent-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        label { cursor: pointer; user-select: none; }
 
-#countdown{
-    margin-top:10px;
-    font-weight:bold;
-    color:#6a1b9a;
-}
+        /* Nút xử lý */
+        .btn-process {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 183, 178, 0.5);
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        .btn-process:hover { transform: translateY(-2px); }
 
-/* SNOW */
-.snow{
-    position:fixed;
-    top:-10px;
-    color:#fff;
-    font-size:18px;
-    pointer-events:none;
-    animation: fall linear infinite;
-}
-@keyframes fall{
-    to{ transform: translateY(110vh); }
-}
-</style>
+        /* Kết quả */
+        #result-area { margin-top: 30px; display: none; border-top: 1px solid #eee; padding-top: 20px; }
+        
+        .download-btn {
+            display: flex; align-items: center; justify-content: center;
+            background-color: var(--secondary-color); color: white;
+            text-decoration: none; padding: 10px 20px;
+            border-radius: 15px; margin: 10px 0; font-weight: bold;
+        }
+        .download-btn:hover { opacity: 0.9; }
+        
+        .status { font-size: 13px; color: var(--primary-color); margin-top: 10px; font-style: italic; }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
-    <div class="avatar">
-        <img src="https://sf-static.upanhlaylink.com/img/image_20251218be9bb481d1c7a17aba1c6210769a287c.jpg">
+    <div class="container">
+        <span class="icon">📑✨</span>
+        <h1>Bảo Hy PDF Tool v2</h1>
+        <p>Tách Trang Lẻ & Chẵn (Đảo ngược) + Đánh số trang</p>
+
+        <div class="file-input-wrapper">
+            <label for="pdf-upload" class="custom-file-upload">
+                📥 Chọn file PDF
+            </label>
+            <input id="pdf-upload" type="file" accept="application/pdf" onchange="updateFileName()" />
+            <div id="file-name" style="margin-top:10px; font-size:12px; color:#555;">Chưa có file</div>
+        </div>
+
+        <div class="options-wrapper">
+            <input type="checkbox" id="add-page-numbers">
+            <label for="add-page-numbers">Đánh số trang (Góc trên phải) 🖊️</label>
+        </div>
+
+        <button class="btn-process" onclick="processPDF()">Bắt đầu xử lý 🚀</button>
+        <div id="status-msg" class="status"></div>
+
+        <div id="result-area">
+            <h3>🎉 Xong rồi nè!</h3>
+            <a id="link-odd" class="download-btn" download="Trang_Le.pdf">📄 Tải File Trang Lẻ</a>
+            <a id="link-even" class="download-btn" download="Trang_Chan_Dao_Nguoc.pdf" style="background-color: #ffdac1;">📑 Tải File Trang Chẵn (Đảo)</a>
+        </div>
     </div>
 
-    <p>
-        “ Nhấp vào nút truy cập phía bên dưới, sau khi vào shopee hãy đợi 10 giây
-        rồi trở lại vào web để truy cập File hay tài liệu cần lấy “
-    </p>
+    <script>
+        const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
-    <button id="mainBtn">Truy cập</button>
-    <div id="countdown"></div>
-    <div id="status"></div>
-</div>
-
-<script>
-/* ===== CONFIG ===== */
-const WAIT_TIME = 10 * 1000;
-const FILE_TIME = 5 * 60 * 1000;
-
-const KEY_START = "start_time";
-const KEY_UNLOCK = "unlock_time";
-
-/* ===== ELEMENT ===== */
-const btn = document.getElementById("mainBtn");
-const status = document.getElementById("status");
-const countdownEl = document.getElementById("countdown");
-
-let timer = null;
-
-/* ===== RESET ===== */
-function reset(msg){
-    localStorage.removeItem(KEY_START);
-    localStorage.removeItem(KEY_UNLOCK);
-    btn.innerText = "Truy cập";
-    btn.style.display = "inline-block";
-    btn.onclick = startAccess;
-    countdownEl.innerText = "";
-    status.innerText = msg || "";
-    if(timer) clearInterval(timer);
-}
-
-/* ===== START ACCESS ===== */
-function startAccess(){
-    const now = Date.now();
-    localStorage.setItem(KEY_START, now);
-    status.innerText = "";
-    btn.style.display = "none";
-    startCountdown(now);
-    window.location.href = "https://s.shopee.vn/6Ae4C7ROMz";
-}
-
-/* ===== COUNTDOWN DISPLAY ===== */
-function startCountdown(start){
-    if(timer) clearInterval(timer);
-    timer = setInterval(()=>{
-        const remain = WAIT_TIME - (Date.now() - start);
-        if(remain > 0){
-            countdownEl.innerText = `⏳ Đang đếm: ${Math.ceil(remain/1000)} giây`;
-        }else{
-            countdownEl.innerText = "✔ Đã đủ 10 giây";
-            clearInterval(timer);
+        function updateFileName() {
+            const input = document.getElementById('pdf-upload');
+            const fileNameDisplay = document.getElementById('file-name');
+            if (input.files.length > 0) fileNameDisplay.textContent = "Đã chọn: " + input.files[0].name;
+            document.getElementById('result-area').style.display = 'none';
         }
-    },500);
-}
 
-/* ===== CHECK STATE ===== */
-function checkState(){
-    const start = localStorage.getItem(KEY_START);
-    const unlock = localStorage.getItem(KEY_UNLOCK);
-    const now = Date.now();
+        async function processPDF() {
+            const input = document.getElementById('pdf-upload');
+            const statusMsg = document.getElementById('status-msg');
+            const shouldNumberPages = document.getElementById('add-page-numbers').checked; // Kiểm tra checkbox
+            
+            if (!input.files.length) {
+                statusMsg.textContent = "⚠️ Em nhớ chọn file PDF trước nha!";
+                return;
+            }
 
-    /* ĐÃ MỞ FILE */
-    if(unlock){
-        if(now - unlock >= FILE_TIME){
-            reset("");
-        }else{
-            btn.innerText = "Truy cập tài liệu & File";
-            btn.style.display = "inline-block";
-            btn.onclick = ()=>{
-                window.location.href =
-                "https://docs.google.com/document/d/1-AczkDnMaiETz8CXb42j3FEo7GWReKLjln5seMIFPvg/edit?usp=drivesdk";
-            };
+            statusMsg.textContent = "⏳ Đang xử lý...";
+            
+            try {
+                const arrayBuffer = await input.files[0].arrayBuffer();
+                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                const pageCount = pdfDoc.getPageCount();
+
+                // Chuẩn bị 2 file đích
+                const pdfOdd = await PDFDocument.create();
+                const pdfEvenReversed = await PDFDocument.create();
+
+                // Chuẩn bị font chữ để đánh số trang
+                const font = await pdfOdd.embedFont(StandardFonts.Helvetica);
+                const fontReversed = await pdfEvenReversed.embedFont(StandardFonts.Helvetica);
+
+                // --- XỬ LÝ 1: Trang Lẻ (Index 0, 2, 4...) ---
+                const oddIndices = [];
+                for (let i = 0; i < pageCount; i++) if (i % 2 === 0) oddIndices.push(i);
+                
+                const oddPages = await pdfOdd.copyPages(pdfDoc, oddIndices);
+                
+                oddPages.forEach((page, idx) => {
+                    pdfOdd.addPage(page);
+                    // Logic đánh số trang nếu được chọn
+                    if (shouldNumberPages) {
+                        const originalPageNum = oddIndices[idx] + 1; // Số trang gốc
+                        drawPageNumber(page, originalPageNum, font);
+                    }
+                });
+
+                // --- XỬ LÝ 2: Trang Chẵn Đảo Ngược (Index Lẻ từ cuối về đầu) ---
+                const evenIndicesReversed = [];
+                for (let i = pageCount - 1; i >= 0; i--) if (i % 2 !== 0) evenIndicesReversed.push(i);
+                
+                const evenPages = await pdfEvenReversed.copyPages(pdfDoc, evenIndicesReversed);
+
+                evenPages.forEach((page, idx) => {
+                    pdfEvenReversed.addPage(page);
+                    // Logic đánh số trang nếu được chọn
+                    if (shouldNumberPages) {
+                        const originalPageNum = evenIndicesReversed[idx] + 1; // Số trang gốc
+                        drawPageNumber(page, originalPageNum, fontReversed);
+                    }
+                });
+
+                // --- Xuất file ---
+                const oddBytes = await pdfOdd.save();
+                const evenBytes = await pdfEvenReversed.save();
+
+                document.getElementById('link-odd').href = URL.createObjectURL(new Blob([oddBytes], { type: "application/pdf" }));
+                document.getElementById('link-even').href = URL.createObjectURL(new Blob([evenBytes], { type: "application/pdf" }));
+
+                statusMsg.textContent = "";
+                document.getElementById('result-area').style.display = "block";
+
+            } catch (error) {
+                console.error(error);
+                statusMsg.textContent = "❌ Lỗi: " + error.message;
+            }
         }
-        return;
-    }
 
-    if(!start) return;
-
-    const diff = now - start;
-
-    if(diff < WAIT_TIME){
-        const thiếu = Math.ceil((WAIT_TIME - diff)/1000);
-        reset(`❌ Chưa đủ thời gian truy cập – còn thiếu ${thiếu} giây`);
-    }else{
-        localStorage.setItem(KEY_UNLOCK, now);
-        btn.innerText = "Truy cập tài liệu & File";
-        btn.style.display = "inline-block";
-        btn.onclick = ()=>{
-            window.location.href =
-            "https://docs.google.com/document/d/1-AczkDnMaiETz8CXb42j3FEo7GWReKLjln5seMIFPvg/edit?usp=drivesdk";
-        };
-        status.innerText = "✅ Hoàn tất xác nhận";
-        countdownEl.innerText = "";
-    }
-}
-
-/* ===== EVENTS ===== */
-btn.onclick = startAccess;
-window.addEventListener("pageshow", checkState);
-
-/* ===== SNOW ===== */
-for(let i=0;i<35;i++){
-    const s=document.createElement("div");
-    s.className="snow";
-    s.innerText="❄";
-    s.style.left=Math.random()*100+"vw";
-    s.style.animationDuration=3+Math.random()*5+"s";
-    s.style.fontSize=10+Math.random()*15+"px";
-    document.body.appendChild(s);
-}
-</script>
-
+        // Hàm vẽ số trang nhỏ gọn
+        function drawPageNumber(page, num, font) {
+            const { width, height } = page.getSize();
+            const fontSize = 10;
+            const text = `Trang ${num}`;
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            
+            page.drawText(text, {
+                x: width - textWidth - 15, // Cách lề phải 15 đơn vị
+                y: height - 20,            // Cách lề trên 20 đơn vị
+                size: fontSize,
+                font: font,
+                color: rgb(0.4, 0.4, 0.4), // Màu xám nhẹ (ít ảnh hưởng nội dung)
+            });
+        }
+    </script>
 </body>
 </html>
